@@ -10,7 +10,7 @@ Datový model musí obsahovat alespoň jeden vztah generalizace/specializace
 spojené vztahem generalizace/specializace; vč. použití správné notace vztahu
 generalizace/specializace v diagramu).
 
-### Zadání z IUS **49. Bug Tracker**
+### Zadání z IUS - 49. Bug Tracker
 Vytvořte informační systém pro hlášení a správů chyb a zranitelností systému.
 Systém umožňuje uživatelům hlásit bugy, jejich závažnosti a moduly, ve kterých
 se vyskytly, ve formě tiketů. Tikety mohou obsahovat hlášení o více než jednom
