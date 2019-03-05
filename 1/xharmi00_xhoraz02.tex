@@ -1,0 +1,53 @@
+% Author: Dominik Harmim <xharmi00@stud.fit.vutbr.cz>
+% Author: František Horázný <xhoraz02@stud.fit.vutbr.cz>
+
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{pdflscape}
+
+\begin{document}
+	\begin{titlepage}
+		\begin{center}
+			\includegraphics[width=0.77 \linewidth]{FIT_logo.pdf} \\
+
+			\vspace{\stretch{0.382}}
+
+            \Huge{Projekt 1.~část} \\
+			\Huge{Datový model (ERD), model případů užití} \\
+			\LARGE{\textbf{Zadání č.~49.\,--\,Bug Tracker}} \\
+			\Large{Databázové systémy}
+			
+			\vspace{\stretch{0.618}}
+		\end{center}
+		
+		{\Large
+			\today
+			\hfill
+			\begin{tabular}{l l}
+				Dominik Harmim & (xharmi00) \\
+				František Horázný & (xhoraz02) \\
+			\end{tabular}
+		}
+	\end{titlepage}
+
+	\begin{figure}[ht]
+		\centering
+		\vspace{-3cm}
+        \includegraphics[width=1 \linewidth]{use_case_diagram.pdf}
+		\caption{Model případů užití}
+	\end{figure}
+	
+	\begin{landscape}
+    	\begin{figure}[ht]
+    		\centering
+            \includegraphics[width=0.85 \linewidth]{er_diagram.pdf}
+    		\caption{Datový model (ERD)}
+    	\end{figure}
+	\end{landscape}
+\end{document}
