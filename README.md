@@ -5,4 +5,4 @@
 - František Horázný <xhoraz02@stud.fit.vutbr.cz>
 
 #### Projekt je rozdělen na několik částí
-1. [Datový model (ERD) a model případů užití](./1/README.md)
+1. [Datový model (ERD) a model případů užití](./1/)
