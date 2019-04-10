@@ -1,4 +1,4 @@
--- SQL skript pro vytvoření základních objektů schématu databáze.
+-- SQL skript s několika dotazy SELECT.
 -- Zadání č. 49. – Bug Tracker.
 --------------------------------------------------------------------------------
 -- Autor: Dominik Harmim <xharmi00@stud.fit.vutbr.cz>.
@@ -167,9 +167,9 @@ VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing 
 INSERT INTO "bug" ("description", "severity", "severity_security", "patch_id")
 VALUES ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'HIGH', 'ERROR', 1);
 INSERT INTO "bug" ("description", "severity", "severity_security", "patch_id")
-VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'NORMAL', NULL, NULL);
+VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'NORMAL', NULL, 2);
 INSERT INTO "bug" ("description", "severity", "severity_security", "patch_id")
-VALUES ('Pellentesque arcu.', 'LOW', 'WARNING', 2);
+VALUES ('Pellentesque arcu.', 'LOW', 'WARNING', NULL);
 
 INSERT INTO "language" ("name")
 VALUES ('Java');
@@ -189,11 +189,15 @@ INSERT INTO "module" ("name", "language_id", "programmer_id")
 VALUES ('HTTP', 1, 1);
 INSERT INTO "module" ("name", "language_id", "programmer_id")
 VALUES ('Log', 2, 2);
+INSERT INTO "module" ("name", "language_id", "programmer_id")
+VALUES ('API', 1, 2);
 
 INSERT INTO "module_bug" ("module_id", "bug_id")
 VALUES (1, 1);
 INSERT INTO "module_bug" ("module_id", "bug_id")
 VALUES (1, 2);
+INSERT INTO "module_bug" ("module_id", "bug_id")
+VALUES (2, 1);
 INSERT INTO "module_bug" ("module_id", "bug_id")
 VALUES (2, 2);
 INSERT INTO "module_bug" ("module_id", "bug_id")
@@ -208,3 +212,97 @@ INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
 VALUES (2, 1);
 INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
 VALUES (2, 3);
+
+
+-------------------------------- SELECT ----------------------------------------
+
+
+-- Které moduly jsou implementovány v jazyce Java?
+-- (modul)
+-- spojení dvou tabulek --
+SELECT "m"."name" AS "modul"
+FROM "module" "m"
+JOIN "language" "l" ON "l"."id" = "m"."language_id"
+WHERE "l"."name" = 'Java'
+ORDER BY "modul";
+
+-- Které patche opravují bugy obsahující bezpečnostní hrozbu?
+-- (id, popis, zavaznost_hrozby)
+-- spojení dvou tabulek --
+SELECT
+	"p"."id" AS "id",
+	"p"."description" AS "popis",
+	"b"."severity_security" AS "zavaznost_hrozby"
+FROM "patch" "p"
+JOIN "bug" "b" ON "b"."patch_id" = "p"."id"
+WHERE "b"."severity_security" IS NOT NULL
+ORDER BY "zavaznost_hrozby", "id";
+
+-- Jaké jazyky ovládají jednotliví uživatelé?
+-- (jmeno, prijmeni, email, jazyk)
+-- spojení tří tabulek --
+SELECT
+	"u"."first_name" AS "jmeno",
+	"u"."last_name" AS "prijmeni",
+	"u"."email" AS "email",
+	"l"."name" AS "jazyk"
+FROM "user_language" "ul"
+JOIN "user" "u" ON "u"."id" = "ul"."user_id"
+JOIN "language" "l" ON "l"."id" = "ul"."language_id"
+ORDER BY "prijmeni", "jmeno", "jazyk";
+
+-- Kteří uživatelé ovládají více než jeden jazyk a kolik jich ovládají?
+-- (jmeno, prijmeni, email, pocet)
+-- klauzule GROUP BY s použitím agregační funkce --
+SELECT
+	"u"."first_name" AS "jmeno",
+	"u"."last_name" AS "prijmeni",
+	"u"."email" AS "email",
+	COUNT("ul"."language_id") AS "pocet"
+FROM "user" "u"
+JOIN "user_language" "ul" ON "ul"."user_id" = "u"."id"
+GROUP BY "u"."id", "u"."first_name", "u"."last_name", "u"."email"
+HAVING COUNT("ul"."language_id") > 1
+ORDER BY "prijmeni", "jmeno";
+
+-- Který modul obsahuje nejvíce bugů a kolik jich obsahuje?
+-- (modul, pocet)
+-- klauzule GROUP BY s použitím agregační funkce --
+SELECT
+	"m"."name" AS "modul",
+	COUNT("mb"."bug_id") AS "pocet"
+FROM "module" "m"
+JOIN "module_bug" "mb" ON "mb"."module_id" = "m"."id"
+GROUP BY "m"."id", "m"."name"
+HAVING COUNT("mb"."bug_id") >= ALL (
+	SELECT COUNT("mb"."bug_id")
+	FROM "module_bug" "mb"
+	GROUP BY "mb"."module_id"
+)
+ORDER BY "modul";
+
+-- Které bugy nejsou obsaženy v žádném tiketu?
+-- (id, popis)
+-- predikát EXISTS
+SELECT
+	"b"."id" AS "id",
+	"b"."description" AS "popis"
+FROM "bug" "b"
+WHERE NOT EXISTS (
+	SELECT *
+	FROM "ticket_bug" "tb"
+	WHERE "tb"."bug_id" = "b"."id"
+)
+ORDER BY "id";
+
+-- Které moduly neobsahují žádné bugy?
+-- (modul)
+-- predikát IN s vnořeným SELECT
+SELECT
+	"m"."name" AS "modul"
+FROM "module" "m"
+WHERE "m"."id" NOT IN (
+	SELECT DISTINCT "mb"."module_id"
+	FROM "module_bug" "mb"
+)
+ORDER BY "modul";
