@@ -211,6 +211,8 @@ VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing 
 INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
 VALUES (2, 1);
 INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
+VALUES (2, 2);
+INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
 VALUES (2, 3);
 
 
@@ -281,17 +283,17 @@ HAVING COUNT("mb"."bug_id") >= ALL (
 )
 ORDER BY "modul";
 
--- Které bugy nejsou obsaženy v žádném tiketu?
+-- Které tickety neobsahují žádný specifický bug?
 -- (id, popis)
 -- predikát EXISTS
 SELECT
-	"b"."id" AS "id",
-	"b"."description" AS "popis"
-FROM "bug" "b"
+	"t"."id" AS "id",
+	"t"."description" AS "popis"
+FROM "ticket" "t"
 WHERE NOT EXISTS (
 	SELECT *
 	FROM "ticket_bug" "tb"
-	WHERE "tb"."bug_id" = "b"."id"
+	WHERE "tb"."ticket_id" = "t"."id"
 )
 ORDER BY "id";
 
