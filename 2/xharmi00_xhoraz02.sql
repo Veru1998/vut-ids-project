@@ -120,6 +120,7 @@ CREATE TABLE "module_bug" (
 CREATE TABLE "ticket" (
 	"id" INT GENERATED AS IDENTITY NOT NULL PRIMARY KEY,
 	"description" VARCHAR(500) NOT NULL,
+	"resolved" SMALLINT DEFAULT 0 NOT NULL,
 	"user_id" INT NOT NULL, -- creates
 	"programmer_id" INT DEFAULT NULL, -- opens
 	CONSTRAINT "ticket_user_id_fk"
@@ -199,10 +200,10 @@ VALUES (2, 2);
 INSERT INTO "module_bug" ("module_id", "bug_id")
 VALUES (2, 3);
 
-INSERT INTO "ticket" ("description", "user_id", "programmer_id")
-VALUES ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 1, NULL);
-INSERT INTO "ticket" ("description", "user_id", "programmer_id")
-VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 1, 2);
+INSERT INTO "ticket" ("description", "resolved", "user_id", "programmer_id")
+VALUES ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 0, 1, NULL);
+INSERT INTO "ticket" ("description", "resolved", "user_id", "programmer_id")
+VALUES ('Integer malesuada. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 1, 1, 2);
 
 INSERT INTO "ticket_bug" ("ticket_id", "bug_id")
 VALUES (2, 1);
