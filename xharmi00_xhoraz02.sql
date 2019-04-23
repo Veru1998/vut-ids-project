@@ -152,6 +152,8 @@ INSERT INTO "programmer" ("github", "admin")
 VALUES ('https://github.com/harmim', 0);
 INSERT INTO "programmer" ("github", "admin")
 VALUES ('https://github.com/foobar', 1);
+INSERT INTO "programmer" ("github", "admin")
+VALUES ('https://github.com/programator', 0);
 
 INSERT INTO "user" ("first_name", "last_name", "birthdate", "email", "password", "programmer_id")
 VALUES ('Jan', 'Novák', TO_DATE('1972-07-30', 'yyyy/mm/dd'), 'novak@gmail.com', 'dfDFS789dS2fd', NULL);
@@ -159,6 +161,8 @@ INSERT INTO "user" ("first_name", "last_name", "birthdate", "email", "password",
 VALUES ('Dominik', 'Harmim', TO_DATE('1997-05-29', 'yyyy/mm/dd'), 'harmim6@gmail.com', 'fd@Jfd2po223', 1);
 INSERT INTO "user" ("first_name", "last_name", "birthdate", "email", "password", "programmer_id")
 VALUES ('Petr', 'Svoboda', TO_DATE('1992-03-15', 'yyyy/mm/dd'), 'svoboda@gmail.com', 'dfji**#$#DF', 2);
+INSERT INTO "user" ("first_name", "last_name", "birthdate", "email", "password", "programmer_id")
+VALUES ('Nahodny', 'Programator', TO_DATE('1922-02-2', 'yyyy/mm/dd'), 'programator@kezniceni.com', 'lamala**#$#DF', 3);
 
 INSERT INTO "patch" ("description", "deployed", "user_id", "programmer_id")
 VALUES ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', TO_DATE('2019-03-20', 'yyyy/mm/dd'), 1, 1);
@@ -192,6 +196,8 @@ INSERT INTO "module" ("name", "language_id", "programmer_id")
 VALUES ('Log', 2, 2);
 INSERT INTO "module" ("name", "language_id", "programmer_id")
 VALUES ('API', 1, 2);
+INSERT INTO "module" ("name", "language_id", "programmer_id")
+VALUES ('MyModule', 1, 3);
 
 INSERT INTO "module_bug" ("module_id", "bug_id")
 VALUES (1, 1);
@@ -331,13 +337,26 @@ CREATE OR REPLACE TRIGGER user_number BEFORE
 -- Předvedení: Jan Novák by měl podle výše uvedených insertů mít id 1, Dominik Harmim 2 a Petr Svoboda 3
 SELECT "u"."first_name","u"."id" FROM "user" "u" ORDER BY "id";
 
+-- při rušení programátora se všechny moduly, o které se staral automaticky přiřadí náhodným jiným programátorům
+CREATE OR REPLACE TRIGGER module_spare_programmer BEFORE
+	DELETE ON "programmer"
+	FOR EACH ROW
+	BEGIN
+		UPDATE "module"
+		SET "programmer_id" = 	(SELECT "id" FROM  
+									(SELECT "id" FROM "programmer"
+									ORDER BY DBMS_RANDOM.VALUE)  
+								WHERE ROWNUM = 1)
+		WHERE "programmer_id" = :old.id;
+	END;
+/
+
+-- Předvedení
+SELECT "programmer_id" FROM "module" WHERE "name" = "MyModule"
+DELETE FROM "user" WHERE "last_name" = "Programator"
+SELECT "programmer_id" FROM "module" WHERE "name" = "MyModule"
 
 
-
-
-
-
- 
 ----------------------------- EXPLAIN PLAN ------------------------------------
 -- explain dotaz na jména uživatelů a počet ticketů podaných někým s tímto jménem
 -- nedává smysl, ale jako příklad poslouží
@@ -361,8 +380,8 @@ SELECT * FROM TABLE(dbms_xplan.display());
 
 DROP INDEX first_name_index;
 
------------------------------- PROCEDURE --------------------------------------
 
+------------------------------ PROCEDURE --------------------------------------
 
 -- Procedura vypíše přehled celkově zadaných ticketů, chyb v nich a celkový počet uživatelů
 CREATE OR REPLACE PROCEDURE user_bug_ticket_count_summary AS
@@ -397,7 +416,8 @@ BEGIN
 	END;
 END;
 /
-
+-- příklad spuštění
+EXECUTE user_bug_ticket_count_summary();
 
 -- Procedura počítá, kolik celkově uživatelů ovládá daný jazyk
 CREATE OR REPLACE PROCEDURE language_knowledge (lang_name IN VARCHAR) AS
@@ -430,9 +450,11 @@ BEGIN
 	END;
 END;
 /
+-- příklad spuštění
+EXECUTE language_knowledge("Java");
+
 
 -------------------------------- PRÁVA ----------------------------------------
-
 
 GRANT ALL ON "ticket"      	TO xhoraz02;
 GRANT ALL ON "module"     	TO xhoraz02;
@@ -449,7 +471,9 @@ GRANT ALL ON "user_language" TO xhoraz02;
 GRANT EXECUTE ON user_bug_ticket_count_summary TO xhoraz02;
 GRANT EXECUTE ON language_knowledge TO xhoraz02;
 
+
 --------------------------- MATERIALIZED VIEW ----------------------------------
+
 -- pohled na všechny uživatele a počet jejich ticketů
 CREATE MATERIALIZED VIEW user_ticket_count AS
 SELECT "u"."first_name", "u"."last_name", count("t"."user_id") FROM "user" "u"
