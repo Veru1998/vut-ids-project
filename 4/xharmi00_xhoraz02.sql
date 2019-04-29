@@ -360,7 +360,7 @@ BEGIN "language_knowledge"('Java'); END;
 ----------------------------- EXPLAIN PLAN -------------------------------------
 
 
--- Kteří uživatelé, kteří jsou programátoři ovládají více než jeden jazyk
+-- Kteří uživatelé (s emailem na gmail) ovládají více než jeden jazyk
 -- a kolik jich ovládají?
 EXPLAIN PLAN FOR
 SELECT
@@ -368,7 +368,7 @@ SELECT
 	COUNT("ul"."language_id") AS "count"
 FROM "user" "u"
 JOIN "user_language" "ul" ON "ul"."user_id" = "u"."id"
-WHERE "u"."programmer_id" IS NOT NULL
+WHERE "u"."email" LIKE '%gmail.com'
 GROUP BY "u"."id", "u"."email"
 HAVING COUNT("ul"."language_id") > 1
 ORDER BY "email";
@@ -376,7 +376,7 @@ ORDER BY "email";
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 -- Index pro email uživatele (seskupení podle emailu a rychlejší vyhledávání).
-CREATE INDEX "user_programmer" ON "user" ("programmer_id");
+CREATE INDEX "user_email" ON "user" ("email");
 
 -- druhý pokus
 EXPLAIN PLAN FOR
@@ -385,7 +385,7 @@ SELECT
 	COUNT("ul"."language_id") AS "count"
 FROM "user" "u"
 JOIN "user_language" "ul" ON "ul"."user_id" = "u"."id"
-WHERE "u"."programmer_id" IS NOT NULL
+WHERE "u"."email" LIKE '%gmail.com'
 GROUP BY "u"."id", "u"."email"
 HAVING COUNT("ul"."language_id") > 1
 ORDER BY "email";
